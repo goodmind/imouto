@@ -2,8 +2,6 @@ logger = require 'winston'
 config = require '../lib/config'
 misc = require '../lib/misc'
 
-#keys = {}
-
 search = (txt, rsz = 1, offset = 1) ->
     misc.get "https://www.googleapis.com/customsearch/v1?",
         qs:
@@ -68,7 +66,7 @@ module.exports =
                 if context.index > 1
                     context.index -= 1
                 else
-                    logger.info 'disable prev button'
+                    logger.debug 'disable prev button'
                     context.index = 0
                     context.keyboard = firstKeyboard
                 context.pic = context.picSet[context.index]
@@ -81,7 +79,7 @@ module.exports =
                         context.keyboard = pageKeyboard
                         res()
                     else
-                        logger.info 'make new request'
+                        logger.debug 'make new request'
                         @search(context.txt, context.picSet.length).then (results) => 
                             context.index = context.picSet.length + 1
                             context.picSet = context.picSet.concat(results)
@@ -100,17 +98,8 @@ module.exports =
         txt = msg.match[2]
         if not txt? and msg.reply_to_message?.text?
             txt = msg.reply_to_message.text
-        #if not txt? and msg.match[1].toLowerCase() in ['moar', 'моар', 'more', 'еще', 'ещё']
-        #    txt = @lastText
         if not txt?
             return
-        #key = txt + "$$" + msg.chat.id
-        #if key not of keys
-        #    keys[key] = true
-        #    res = search(txt)
-        #else
-        #    logger.info "Repeated: #{key}"
-        #    res = search(txt, 8)
         res = @search txt
 
         safe(res).then (results) =>
@@ -119,7 +108,6 @@ module.exports =
             else
                 result = results[0]
                 @sendInline msg, result, results, txt
-                #@sendImageFromUrl msg, url, reply: msg.id
 
     onError: (msg) ->
         msg.send('Поиск не удался...')
