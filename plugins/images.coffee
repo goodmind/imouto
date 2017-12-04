@@ -54,12 +54,17 @@ module.exports =
             pic: pic
             picSet: picSet
             index: picSet.indexOf(pic)
-            keyboard: firstKeyboard
+            keyboard: firstKeyboard,
+            isDisabled: false
         msg.send url,
             inlineKeyboard: context.keyboard,
             callback: (cb, msg) => @onCallback context, cb, msg
 
     onCallback: (context, cb, msg) ->
+        if context.isDisabled
+            cb.answer ''
+            return
+
         context.msg = msg
         switch cb.data
             when 'prev'
@@ -80,7 +85,9 @@ module.exports =
                         res()
                     else
                         logger.debug 'make new request'
-                        @search(context.txt, context.picSet.length).then (results) => 
+                        context.isDisabled = true
+                        @search(context.txt, context.picSet.length).then (results) =>
+                            context.isDisabled = false
                             context.index = context.picSet.length + 1
                             context.picSet = context.picSet.concat(results)
                             res()
